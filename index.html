@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Food For You</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Welcome to Food For You</h1>
+    <p>Delicious food from your favorite restaurant</p>
+  </header>
+  <main>
+    <!-- Form content (simplified) -->
+    <form id="order-form">
+      <input type="text" id="name" placeholder="Your Name" required><br>
+      <textarea id="items" placeholder="What would you like to order?" required></textarea><br>
+      <input type="text" id="address" placeholder="Your Address" required><br>
+      <input type="text" id="maplink" placeholder="Google Map Link (optional)"><br>
+      <select id="payment">
+        <option value="cod">Cash on Delivery</option>
+        <option value="upi">PhonePe / UPI</option>
+      </select><br>
+      <button type="submit">Place Order</button>
+    </form>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>
