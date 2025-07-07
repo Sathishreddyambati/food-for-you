@@ -1,4 +1,4 @@
-// Product list
+// Products
 const products = [
   { id: 1, name: "Chicken Biryani", price: 180 },
   { id: 2, name: "Veg Biryani", price: 150 },
@@ -26,7 +26,7 @@ function renderProducts() {
   });
 }
 
-// Add item to cart
+// Add to cart
 function addToCart(id) {
   const item = cart.find(i => i.id === id);
   if (item) {
@@ -39,7 +39,7 @@ function addToCart(id) {
   alert("Item added to cart!");
 }
 
-// Render cart items
+// Render cart page
 function renderCart() {
   const container = document.getElementById("cartItems");
   if (!container) return;
@@ -62,7 +62,7 @@ function renderCart() {
   }
 }
 
-// Change item quantity in cart
+// Change quantity
 function changeQty(index, delta) {
   cart[index].qty += delta;
   if (cart[index].qty <= 0) {
@@ -72,7 +72,7 @@ function changeQty(index, delta) {
   renderCart();
 }
 
-// Submit order
+// Submit order function with WhatsApp open
 function submitOrder() {
   const name = document.getElementById("name").value;
   const address = document.getElementById("address").value;
@@ -94,18 +94,19 @@ function submitOrder() {
 
   firebase.database().ref("orders/" + orderId).set(order, err => {
     if (!err) {
+      localStorage.removeItem("cart");
+
       const msg = `*New Order* 🚨\n🧾 Order ID: ${orderId}\n👤 Name: ${name}\n📍 Address: ${address}\n📌 Map: ${mapLink || "Not Provided"}\n\n🛒 Items:\n` +
         cart.map(i => `- ${i.name} × ${i.qty} = ₹${i.qty * i.price}`).join("\n") +
         `\n\n💰 Total: ₹${total}\n💳 Payment: ${payment}`;
+
       const encodedMsg = encodeURIComponent(msg);
       const phoneNumber = "91" + "6309091558";
       const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodedMsg}`;
 
-      localStorage.removeItem("cart");
-
-      // Delay for smooth redirect
+      // ✅ Use window.open to avoid redirect issues
       setTimeout(() => {
-        window.location.href = whatsappURL;
+        window.open(whatsappURL, '_blank');
       }, 1000);
     } else {
       alert("Order failed. Please try again.");
@@ -113,7 +114,7 @@ function submitOrder() {
   });
 }
 
-// On page load
+// Initialize
 window.onload = function () {
   renderProducts();
   renderCart();
