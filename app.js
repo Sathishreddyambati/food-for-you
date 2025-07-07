@@ -1,4 +1,4 @@
-// Sample products list – you can customize this
+// Sample product list – update as needed
 const products = [
   { id: 1, name: "Chicken Biryani", price: 180 },
   { id: 2, name: "Veg Biryani", price: 150 },
@@ -26,8 +26,12 @@ function renderProducts() {
 
 function addToCart(id) {
   const item = cart.find(i => i.id === id);
-  if (item) item.qty += 1;
-  else cart.push({ ...products.find(p => p.id === id), qty: 1 });
+  if (item) {
+    item.qty += 1;
+  } else {
+    const product = products.find(p => p.id === id);
+    cart.push({ ...product, qty: 1 });
+  }
   localStorage.setItem('cart', JSON.stringify(cart));
   alert("Item added to cart!");
 }
@@ -53,7 +57,9 @@ function renderCart() {
 
 function changeQty(index, delta) {
   cart[index].qty += delta;
-  if (cart[index].qty <= 0) cart.splice(index, 1);
+  if (cart[index].qty <= 0) {
+    cart.splice(index, 1);
+  }
   localStorage.setItem('cart', JSON.stringify(cart));
   renderCart();
 }
@@ -64,6 +70,7 @@ function submitOrder() {
   const mapLink = document.getElementById("mapLink").value;
   const payment = document.querySelector("input[name='payment']:checked").value;
   const orderId = "ORD" + Math.floor(100000 + Math.random() * 900000);
+  const total = cart.reduce((sum, item) => sum + item.qty * item.price, 0);
 
   const order = {
     name,
@@ -71,7 +78,7 @@ function submitOrder() {
     mapLink,
     payment,
     items: cart,
-    total: cart.reduce((sum, item) => sum + item.qty * item.price, 0),
+    total,
     status: "Confirmed",
     timestamp: new Date().toLocaleString()
   };
@@ -79,15 +86,21 @@ function submitOrder() {
   firebase.database().ref("orders/" + orderId).set(order, err => {
     if (!err) {
       localStorage.removeItem("cart");
-      window.location.href = "success.html?orderId=" + orderId;
+
+      const msg = `*New Order Received* 🍽️\n\n🧾 *Order ID:* ${orderId}\n👤 *Customer:* ${name}\n📍 *Address:* ${address}\n🔗 *Map:* ${mapLink || "Not Provided"}\n\n🛒 *Items:*\n` +
+        cart.map(i => `- ${i.name} × ${i.qty} = ₹${i.qty * i.price}`).join("\n") +
+        `\n\n💰 *Total:* ₹${total}\n💳 *Payment:* ${payment}`;
+
+      const encodedMsg = encodeURIComponent(msg);
+      const phoneNumber = "91" + "6309091558";
+      window.location.href = `https://wa.me/${phoneNumber}?text=${encodedMsg}`;
     } else {
-      alert("Order failed. Try again.");
+      alert("Order failed. Please try again.");
     }
   });
 }
 
-// Render on load
 window.onload = function () {
   renderProducts();
   renderCart();
-};// Main logic for cart, login, and order handling
+};
