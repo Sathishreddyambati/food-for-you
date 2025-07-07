@@ -1,17 +1,3 @@
-// Firebase Config
-const firebaseConfig = {
-  apiKey: "AIzaSyCQd4MFvO1q-6Rtr9GrvyyIoO3VF5ibLK0",
-  authDomain: "foodforyou-52955.firebaseapp.com",
-  databaseURL: "https://foodforyou-52955-default-rtdb.firebaseio.com",
-  projectId: "foodforyou-52955",
-  storageBucket: "foodforyou-52955.appspot.com",
-  messagingSenderId: "992651702910",
-  appId: "1:992651702910:web:5cdebc9f90e90701371e2f"
-};
-
-firebase.initializeApp(firebaseConfig);
-
-// Product list
 const products = [
   { id: 1, name: "Chicken Biryani", price: 180 },
   { id: 2, name: "Veg Biryani", price: 150 },
@@ -22,7 +8,6 @@ const products = [
 
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
-// Render products
 function renderProducts() {
   const container = document.getElementById("products");
   if (!container) return;
@@ -40,21 +25,18 @@ function renderProducts() {
   });
 }
 
-// Add to cart
 function addToCart(id) {
-  const product = products.find(p => p.id === id);
   const existing = cart.find(i => i.id === id);
   if (existing) {
     existing.qty += 1;
   } else {
+    const product = products.find(p => p.id === id);
     cart.push({ ...product, qty: 1 });
   }
   localStorage.setItem("cart", JSON.stringify(cart));
   alert("Added to cart!");
-  renderCart();
 }
 
-// Render cart
 function renderCart() {
   const container = document.getElementById("cartItems");
   const totalDisplay = document.getElementById("totalAmount");
@@ -64,24 +46,21 @@ function renderCart() {
   let total = 0;
 
   cart.forEach((item, index) => {
-    const itemDiv = document.createElement("div");
-    itemDiv.className = "cart-item";
-    itemDiv.innerHTML = `
-      <span>${item.name} × 
+    total += item.qty * item.price;
+    container.innerHTML += `
+      <div class="cart-item">
+        ${item.name} × 
         <button onclick="changeQty(${index}, -1)">-</button>
         ${item.qty}
         <button onclick="changeQty(${index}, 1)">+</button>
         = ₹${item.qty * item.price}
-      </span>
+      </div>
     `;
-    container.appendChild(itemDiv);
-    total += item.qty * item.price;
   });
 
-  totalDisplay.textContent = `Total: ₹${total}`;
+  totalDisplay.innerText = `Total: ₹${total}`;
 }
 
-// Change qty
 function changeQty(index, delta) {
   cart[index].qty += delta;
   if (cart[index].qty <= 0) {
@@ -91,53 +70,47 @@ function changeQty(index, delta) {
   renderCart();
 }
 
-// Submit order
-function submitOrder(e) {
-  e.preventDefault();
+function submitOrder() {
   const name = document.getElementById("name").value;
   const address = document.getElementById("address").value;
-  const mapLink = document.getElementById("mapLink").value || "Not Provided";
+  const mapLink = document.getElementById("mapLink").value;
   const payment = document.querySelector("input[name='payment']:checked").value;
-
-  const orderId = generateOrderID();
+  const orderId = "ORD" + Math.floor(100000 + Math.random() * 900000);
   const total = cart.reduce((sum, item) => sum + item.qty * item.price, 0);
 
-  const msg = `*New Order* 🚨\n🧾 Order ID: ${orderId}\n👤 Name: ${name}\n📍 Address: ${address}\n📌 Map: ${mapLink}\n\n🛒 Items:\n` +
+  const order = {
+    name,
+    address,
+    mapLink,
+    payment,
+    items: cart,
+    total,
+    status: "Confirmed",
+    timestamp: new Date().toLocaleString()
+  };
+
+  const msg = `*New Order* 🚨\n🧾 Order ID: ${orderId}\n👤 Name: ${name}\n📍 Address: ${address}\n📌 Map: ${mapLink || "Not Provided"}\n\n🛒 Items:\n` +
     cart.map(i => `- ${i.name} × ${i.qty} = ₹${i.qty * i.price}`).join("\n") +
     `\n\n💰 Total: ₹${total}\n💳 Payment: ${payment}`;
 
   const encodedMsg = encodeURIComponent(msg);
-  const whatsappURL = `https://wa.me/916309091558?text=${encodedMsg}`;
+  const phoneNumber = "91" + "6309091558";
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  const whatsappURL = isMobile
+    ? `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodedMsg}`
+    : `https://web.whatsapp.com/send?phone=${phoneNumber}&text=${encodedMsg}`;
+
   window.open(whatsappURL, "_blank");
 
-  // Save to Firebase
-  firebase.database().ref("orders/" + orderId).set({
-    name,
-    address,
-    mapLink,
-    items: cart,
-    total,
-    payment,
-    status: "Confirmed",
-    timestamp: new Date().toLocaleString()
-  });
+  firebase.database().ref("orders/" + orderId).set(order);
 
+  localStorage.removeItem("cart");
   setTimeout(() => {
-    localStorage.removeItem("cart");
-    window.location.href = "success.html?orderId=" + orderId;
-  }, 2500);
-}
-
-function generateOrderID() {
-  return "ORD" + Math.floor(100000 + Math.random() * 900000);
+    window.location.href = "success.html";
+  }, 2000);
 }
 
 window.onload = function () {
   renderProducts();
   renderCart();
-
-  const orderForm = document.getElementById("orderForm");
-  if (orderForm) {
-    orderForm.addEventListener("submit", submitOrder);
-  }
 };
