@@ -1,4 +1,4 @@
-// Sample product list – update as needed
+// Product list
 const products = [
   { id: 1, name: "Chicken Biryani", price: 180 },
   { id: 2, name: "Veg Biryani", price: 150 },
@@ -9,12 +9,14 @@ const products = [
 
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
+// Render menu
 function renderProducts() {
   const container = document.getElementById("products");
   if (!container) return;
   container.innerHTML = "";
   products.forEach(product => {
     const item = document.createElement("div");
+    item.className = "product-item";
     item.innerHTML = `
       <h3>${product.name}</h3>
       <p>₹${product.price}</p>
@@ -24,6 +26,7 @@ function renderProducts() {
   });
 }
 
+// Add item to cart
 function addToCart(id) {
   const item = cart.find(i => i.id === id);
   if (item) {
@@ -36,6 +39,7 @@ function addToCart(id) {
   alert("Item added to cart!");
 }
 
+// Render cart items
 function renderCart() {
   const container = document.getElementById("cartItems");
   if (!container) return;
@@ -44,7 +48,7 @@ function renderCart() {
   cart.forEach((item, index) => {
     total += item.qty * item.price;
     container.innerHTML += `
-      <div>
+      <div class="cart-item">
         ${item.name} - ₹${item.price} × 
         <button onclick="changeQty(${index}, -1)">-</button>
         ${item.qty}
@@ -52,9 +56,13 @@ function renderCart() {
       </div>
     `;
   });
-  document.getElementById("total").innerText = total;
+  const totalElement = document.getElementById("total");
+  if (totalElement) {
+    totalElement.innerText = total;
+  }
 }
 
+// Change item quantity in cart
 function changeQty(index, delta) {
   cart[index].qty += delta;
   if (cart[index].qty <= 0) {
@@ -64,6 +72,7 @@ function changeQty(index, delta) {
   renderCart();
 }
 
+// Submit order
 function submitOrder() {
   const name = document.getElementById("name").value;
   const address = document.getElementById("address").value;
@@ -85,21 +94,26 @@ function submitOrder() {
 
   firebase.database().ref("orders/" + orderId).set(order, err => {
     if (!err) {
-      localStorage.removeItem("cart");
-
-      const msg = `*New Order Received* 🍽️\n\n🧾 *Order ID:* ${orderId}\n👤 *Customer:* ${name}\n📍 *Address:* ${address}\n🔗 *Map:* ${mapLink || "Not Provided"}\n\n🛒 *Items:*\n` +
+      const msg = `*New Order* 🚨\n🧾 Order ID: ${orderId}\n👤 Name: ${name}\n📍 Address: ${address}\n📌 Map: ${mapLink || "Not Provided"}\n\n🛒 Items:\n` +
         cart.map(i => `- ${i.name} × ${i.qty} = ₹${i.qty * i.price}`).join("\n") +
-        `\n\n💰 *Total:* ₹${total}\n💳 *Payment:* ${payment}`;
-
+        `\n\n💰 Total: ₹${total}\n💳 Payment: ${payment}`;
       const encodedMsg = encodeURIComponent(msg);
       const phoneNumber = "91" + "6309091558";
-      window.location.href = `https://wa.me/${phoneNumber}?text=${encodedMsg}`;
+      const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodedMsg}`;
+
+      localStorage.removeItem("cart");
+
+      // Delay for smooth redirect
+      setTimeout(() => {
+        window.location.href = whatsappURL;
+      }, 1000);
     } else {
       alert("Order failed. Please try again.");
     }
   });
 }
 
+// On page load
 window.onload = function () {
   renderProducts();
   renderCart();
