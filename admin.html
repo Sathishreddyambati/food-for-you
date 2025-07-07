@@ -1,1 +1,37 @@
-<!-- Admin dashboard -->
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>Admin</title></head>
+<body>
+  <h2>Admin Dashboard</h2>
+  <input type="password" id="adminPass" placeholder="Enter Admin Password">
+  <button onclick="loginAdmin()">Login</button>
+  <div id="orders" style="display:none;"></div>
+  <script src="firebase-config.js"></script>
+  <script>
+    const adminPassword = "sathishadmin123";
+    function loginAdmin() {
+      if (document.getElementById('adminPass').value === adminPassword) {
+        document.getElementById('orders').style.display = 'block';
+        loadOrders();
+      } else alert("Wrong password");
+    }
+    function loadOrders() {
+      const db = firebase.database();
+      db.ref("orders").on("value", snapshot => {
+        const orders = snapshot.val();
+        let html = "";
+        for (let id in orders) {
+          html += `<div><b>${id}</b>: ${orders[id].name}, ${orders[id].status}<br>
+          <select onchange="updateStatus('${id}', this.value)">
+            <option>Confirmed</option><option>Preparing</option><option>Out for Delivery</option><option>Delivered</option>
+          </select></div><hr>`;
+        }
+        document.getElementById('orders').innerHTML = html;
+      });
+    }
+    function updateStatus(id, status) {
+      firebase.database().ref('orders/' + id).update({ status });
+    }
+  </script>
+</body>
+</html><!-- Admin dashboard -->
