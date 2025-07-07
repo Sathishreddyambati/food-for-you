@@ -1,1 +1,23 @@
-<!-- Cart page with summary and UPI/COD selection -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Cart</title>
+</head>
+<body>
+  <h2>Your Cart</h2>
+  <div id="cartItems"></div>
+  <p>Total: ₹<span id="total">0</span></p>
+  <form onsubmit="submitOrder(); return false;">
+    <input type="text" id="name" placeholder="Your Name" required><br>
+    <textarea id="address" placeholder="Your Address" required></textarea><br>
+    <input type="text" id="mapLink" placeholder="Google Map Link (optional)"><br>
+    <label><input type="radio" name="payment" value="COD" checked> Cash on Delivery</label>
+    <label><input type="radio" name="payment" value="UPI"> UPI</label><br>
+    <button type="submit">Place Order</button>
+  </form>
+  <script src="firebase-config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html><!-- Cart page with summary and UPI/COD selection -->
