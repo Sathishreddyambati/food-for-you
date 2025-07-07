@@ -2,24 +2,34 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Your Cart</title>
+  <title>Your Cart – Food For You</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <h2>Your Cart</h2>
 
   <div id="cartItems" class="cart-list"></div>
-  <div id="totalAmount" style="margin: 10px 0; font-weight: bold;">Total: ₹0</div>
+  <div style="margin: 10px 0; font-weight: bold;">Total: ₹<span id="total">0</span></div>
 
   <form onsubmit="submitOrder(); return false;">
     <input type="text" id="name" placeholder="Your Name" required /><br /><br />
     <input type="text" id="address" placeholder="Your Address" required /><br /><br />
     <input type="text" id="mapLink" placeholder="Google Map Link (optional)" /><br /><br />
-    <label><input type="radio" name="payment" value="Cash on Delivery" checked /> Cash on Delivery</label>
-    <label><input type="radio" name="payment" value="UPI" /> UPI</label><br /><br />
+
+    <label>
+      <input type="radio" name="payment" value="Cash on Delivery" checked />
+      Cash on Delivery
+    </label>
+    <label>
+      <input type="radio" name="payment" value="UPI" />
+      UPI
+    </label><br /><br />
+
     <button type="submit">Place Order</button>
   </form>
 
+  <!-- Firebase + Scripts -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
   <script src="firebase-config.js"></script>
