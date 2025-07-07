@@ -1,23 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Your Cart</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Your Cart - Food For You</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h2>Your Cart</h2>
-  <div id="cartItems"></div>
-  <p>Total: ₹<span id="total">0</span></p>
-  <form onsubmit="submitOrder(); return false;">
-    <input type="text" id="name" placeholder="Your Name" required><br>
-    <textarea id="address" placeholder="Your Address" required></textarea><br>
-    <input type="text" id="mapLink" placeholder="Google Map Link (optional)"><br>
-    <label><input type="radio" name="payment" value="COD" checked> Cash on Delivery</label>
-    <label><input type="radio" name="payment" value="UPI"> UPI</label><br>
-    <button type="submit">Place Order</button>
-  </form>
-  <script src="firebase-config.js"></script>
+  <header>
+    <h1>🛒 Your Cart</h1>
+  </header>
+
+  <main>
+    <div id="cartItems" class="cart-list"></div>
+
+    <div id="totalAmount" style="margin: 20px 0; font-size: 18px; font-weight: bold;">
+      Total: ₹0
+    </div>
+
+    <form id="orderForm">
+      <input type="text" id="name" placeholder="Your Name" required /><br /><br />
+      <input type="text" id="address" placeholder="Your Address" required /><br /><br />
+      <input type="text" id="mapLink" placeholder="Google Map Link (optional)" /><br /><br />
+
+      <label>
+        <input type="radio" name="payment" value="Cash on Delivery" checked />
+        Cash on Delivery
+      </label>
+      <label>
+        <input type="radio" name="payment" value="UPI" />
+        UPI
+      </label>
+      <br /><br />
+      <button type="submit">Place Order</button>
+    </form>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
   <script src="app.js"></script>
 </body>
-</html><!-- Cart page with summary and UPI/COD selection -->
+</html>
