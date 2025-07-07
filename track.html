@@ -1,1 +1,19 @@
-<!-- Track order by ID -->
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>Track Order</title></head>
+<body>
+  <h2>Track Your Order</h2>
+  <input type="text" id="trackId" placeholder="Enter Order ID">
+  <button onclick="trackOrder()">Track</button>
+  <p id="status"></p>
+  <script src="firebase-config.js"></script>
+  <script>
+    async function trackOrder() {
+      const id = document.getElementById('trackId').value;
+      const db = firebase.database();
+      const snapshot = await db.ref('orders/' + id).once('value');
+      document.getElementById('status').innerText = snapshot.val()?.status || 'Order not found';
+    }
+  </script>
+</body>
+</html><!-- Track order by ID -->
