@@ -27,7 +27,7 @@ function renderProducts() {
   });
 }
 
-// Add product to cart
+// Add to cart
 function addToCart(id) {
   const existing = cart.find(i => i.id === id);
   if (existing) {
@@ -40,7 +40,7 @@ function addToCart(id) {
   alert("Added to cart!");
 }
 
-// Render cart
+// Render cart items
 function renderCart() {
   const container = document.getElementById("cartItems");
   if (!container) return;
@@ -96,36 +96,32 @@ function submitOrder() {
     timestamp: new Date().toLocaleString()
   };
 
-  // Tracking link
-  const trackingLink = `https://sathishreddyambati.github.io/food-for-you/track.html?id=${orderId}`;
-
-  // Prepare WhatsApp message
+  // WhatsApp Message
+  const trackLink = `https://sathishreddyambati.github.io/food-for-you/track.html?id=${orderId}`;
   const msg = `*New Order* 🚨\n🧾 Order ID: ${orderId}\n👤 Name: ${name}\n📍 Address: ${address}\n📌 Map: ${mapLink || "Not Provided"}\n\n🛒 Items:\n` +
     cart.map(i => `- ${i.name} × ${i.qty} = ₹${i.qty * i.price}`).join("\n") +
-    `\n\n💰 Total: ₹${total}\n💳 Payment: ${payment}\n\n📦 *Track your order:* ${trackingLink}`;
+    `\n\n💰 Total: ₹${total}\n💳 Payment: ${payment}\n📦 Track: ${trackLink}`;
 
   const encodedMsg = encodeURIComponent(msg);
   const phoneNumber = "91" + "6309091558";
-
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   const whatsappURL = isMobile
     ? `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodedMsg}`
     : `https://web.whatsapp.com/send?phone=${phoneNumber}&text=${encodedMsg}`;
 
-  // Open WhatsApp first
   window.open(whatsappURL, '_blank');
 
-  // Store order in Firebase
+  // Firebase
   firebase.database().ref("orders/" + orderId).set(order);
 
-  // Clear cart and redirect
+  // Clear and redirect
   localStorage.removeItem("cart");
   setTimeout(() => {
     window.location.href = "success.html";
   }, 1500);
 }
 
-// Initialize on load
+// Initialize
 window.onload = function () {
   renderProducts();
   renderCart();
