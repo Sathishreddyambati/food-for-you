@@ -9,7 +9,6 @@ const firebaseConfig = {
   appId: "1:992651702910:web:5cdebc9f90e90701371e2f"
 };
 
-// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 
 // Product list
@@ -23,7 +22,7 @@ const products = [
 
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
-// Render all products
+// Render products
 function renderProducts() {
   const container = document.getElementById("products");
   if (!container) return;
@@ -52,14 +51,13 @@ function addToCart(id) {
   }
   localStorage.setItem("cart", JSON.stringify(cart));
   alert("Added to cart!");
-  renderCart(); // update view if on cart page
+  renderCart();
 }
 
-// Render cart page
+// Render cart
 function renderCart() {
   const container = document.getElementById("cartItems");
   const totalDisplay = document.getElementById("totalAmount");
-
   if (!container || !totalDisplay) return;
 
   container.innerHTML = "";
@@ -83,7 +81,7 @@ function renderCart() {
   totalDisplay.textContent = `Total: ₹${total}`;
 }
 
-// Change quantity
+// Change qty
 function changeQty(index, delta) {
   cart[index].qty += delta;
   if (cart[index].qty <= 0) {
@@ -93,7 +91,7 @@ function changeQty(index, delta) {
   renderCart();
 }
 
-// Submit Order
+// Submit order
 function submitOrder(e) {
   e.preventDefault();
   const name = document.getElementById("name").value;
@@ -112,18 +110,8 @@ function submitOrder(e) {
   const whatsappURL = `https://wa.me/916309091558?text=${encodedMsg}`;
   window.open(whatsappURL, "_blank");
 
-  saveOrderToFirebase(orderId, name, address, mapLink, cart, total, payment);
-
-  setTimeout(() => {
-    localStorage.removeItem("cart");
-    window.location.href = "success.html?orderId=" + orderId;
-  }, 3000);
-}
-
-// Save to Firebase
-function saveOrderToFirebase(orderId, name, address, mapLink, cart, total, payment) {
-  const timestamp = new Date().toLocaleString();
-  const orderData = {
+  // Save to Firebase
+  firebase.database().ref("orders/" + orderId).set({
     name,
     address,
     mapLink,
@@ -131,20 +119,19 @@ function saveOrderToFirebase(orderId, name, address, mapLink, cart, total, payme
     total,
     payment,
     status: "Confirmed",
-    timestamp
-  };
+    timestamp: new Date().toLocaleString()
+  });
 
-  firebase.database().ref("orders/" + orderId).set(orderData)
-    .then(() => console.log("✅ Order saved"))
-    .catch(err => console.error("❌ Firebase error:", err));
+  setTimeout(() => {
+    localStorage.removeItem("cart");
+    window.location.href = "success.html?orderId=" + orderId;
+  }, 2500);
 }
 
-// Generate Order ID
 function generateOrderID() {
   return "ORD" + Math.floor(100000 + Math.random() * 900000);
 }
 
-// Init
 window.onload = function () {
   renderProducts();
   renderCart();
