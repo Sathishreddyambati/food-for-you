@@ -2,42 +2,27 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Your Cart - Food For You</title>
+  <title>Your Cart</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header>
-    <h1>🛒 Your Cart</h1>
-  </header>
+  <h2>Your Cart</h2>
 
-  <main>
-    <div id="cartItems" class="cart-list"></div>
+  <div id="cartItems" class="cart-list"></div>
+  <div id="totalAmount" style="margin: 10px 0; font-weight: bold;">Total: ₹0</div>
 
-    <div id="totalAmount" style="margin: 20px 0; font-size: 18px; font-weight: bold;">
-      Total: ₹0
-    </div>
-
-    <form id="orderForm">
-      <input type="text" id="name" placeholder="Your Name" required /><br /><br />
-      <input type="text" id="address" placeholder="Your Address" required /><br /><br />
-      <input type="text" id="mapLink" placeholder="Google Map Link (optional)" /><br /><br />
-
-      <label>
-        <input type="radio" name="payment" value="Cash on Delivery" checked />
-        Cash on Delivery
-      </label>
-      <label>
-        <input type="radio" name="payment" value="UPI" />
-        UPI
-      </label>
-      <br /><br />
-      <button type="submit">Place Order</button>
-    </form>
-  </main>
+  <form onsubmit="submitOrder(); return false;">
+    <input type="text" id="name" placeholder="Your Name" required /><br /><br />
+    <input type="text" id="address" placeholder="Your Address" required /><br /><br />
+    <input type="text" id="mapLink" placeholder="Google Map Link (optional)" /><br /><br />
+    <label><input type="radio" name="payment" value="Cash on Delivery" checked /> Cash on Delivery</label>
+    <label><input type="radio" name="payment" value="UPI" /> UPI</label><br /><br />
+    <button type="submit">Place Order</button>
+  </form>
 
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+  <script src="firebase-config.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
