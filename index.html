@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Food For You</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>🍴 Food For You</h1>
+    <p>Your own restaurant's online delivery app</p>
+  </header>
+
+  <main>
+    <section class="menu">
+      <h2>Our Menu</h2>
+      <div class="items">
+        <div class="item">
+          <img src="images/dosa.jpg" alt="Dosa">
+          <h3>Dosa</h3>
+          <p>₹50</p>
+          <button onclick="addToCart('Dosa', 50)">Add to Cart</button>
+        </div>
+        <div class="item">
+          <img src="images/biryani.jpg" alt="Biryani">
+          <h3>Biryani</h3>
+          <p>₹120</p>
+          <button onclick="addToCart('Biryani', 120)">Add to Cart</button>
+        </div>
+        <div class="item">
+          <img src="images/poori.jpg" alt="Poori">
+          <h3>Poori</h3>
+          <p>₹40</p>
+          <button onclick="addToCart('Poori', 40)">Add to Cart</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="cart">
+      <h2>Your Cart</h2>
+      <ul id="cart-list"></ul>
+      <p>Total: ₹<span id="total">0</span></p>
+    </section>
+
+    <section class="order-form">
+      <h2>Place Your Order</h2>
+      <form onsubmit="submitOrder(event)">
+        <label for="name">Name:</label>
+        <input type="text" id="name" required>
+        <label for="phone">Phone:</label>
+        <input type="tel" id="phone" required>
+        <label for="address">Address:</label>
+        <textarea id="address" required></textarea>
+        <button type="submit">Submit Order</button>
+      </form>
+    </section>
+  </main>
+
+  <div id="confirmation" class="hidden">
+    <h2>✅ Order Confirmed!</h2>
+    <p>Thank you for ordering with Food For You!</p>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
