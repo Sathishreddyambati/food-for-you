@@ -1,4 +1,4 @@
-// Products
+// Product list
 const products = [
   { id: 1, name: "Chicken Biryani", price: 180 },
   { id: 2, name: "Veg Biryani", price: 150 },
@@ -9,10 +9,11 @@ const products = [
 
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
-// Render menu
+// Render all products
 function renderProducts() {
   const container = document.getElementById("products");
   if (!container) return;
+
   container.innerHTML = "";
   products.forEach(product => {
     const item = document.createElement("div");
@@ -26,25 +27,27 @@ function renderProducts() {
   });
 }
 
-// Add to cart
+// Add product to cart
 function addToCart(id) {
-  const item = cart.find(i => i.id === id);
-  if (item) {
-    item.qty += 1;
+  const existing = cart.find(i => i.id === id);
+  if (existing) {
+    existing.qty += 1;
   } else {
     const product = products.find(p => p.id === id);
     cart.push({ ...product, qty: 1 });
   }
   localStorage.setItem('cart', JSON.stringify(cart));
-  alert("Item added to cart!");
+  alert("Added to cart!");
 }
 
-// Render cart page
+// Render cart
 function renderCart() {
   const container = document.getElementById("cartItems");
   if (!container) return;
+
   container.innerHTML = "";
   let total = 0;
+
   cart.forEach((item, index) => {
     total += item.qty * item.price;
     container.innerHTML += `
@@ -56,6 +59,7 @@ function renderCart() {
       </div>
     `;
   });
+
   const totalElement = document.getElementById("total");
   if (totalElement) {
     totalElement.innerText = total;
@@ -72,7 +76,7 @@ function changeQty(index, delta) {
   renderCart();
 }
 
-// Submit order function with WhatsApp open
+// Submit order
 function submitOrder() {
   const name = document.getElementById("name").value;
   const address = document.getElementById("address").value;
@@ -92,29 +96,33 @@ function submitOrder() {
     timestamp: new Date().toLocaleString()
   };
 
-  firebase.database().ref("orders/" + orderId).set(order, err => {
-    if (!err) {
-      localStorage.removeItem("cart");
+  // Prepare WhatsApp message
+  const msg = `*New Order* 🚨\n🧾 Order ID: ${orderId}\n👤 Name: ${name}\n📍 Address: ${address}\n📌 Map: ${mapLink || "Not Provided"}\n\n🛒 Items:\n` +
+    cart.map(i => `- ${i.name} × ${i.qty} = ₹${i.qty * i.price}`).join("\n") +
+    `\n\n💰 Total: ₹${total}\n💳 Payment: ${payment}`;
 
-      const msg = `*New Order* 🚨\n🧾 Order ID: ${orderId}\n👤 Name: ${name}\n📍 Address: ${address}\n📌 Map: ${mapLink || "Not Provided"}\n\n🛒 Items:\n` +
-        cart.map(i => `- ${i.name} × ${i.qty} = ₹${i.qty * i.price}`).join("\n") +
-        `\n\n💰 Total: ₹${total}\n💳 Payment: ${payment}`;
+  const encodedMsg = encodeURIComponent(msg);
+  const phoneNumber = "91" + "6309091558";
 
-      const encodedMsg = encodeURIComponent(msg);
-      const phoneNumber = "91" + "6309091558";
-      const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodedMsg}`;
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  const whatsappURL = isMobile
+    ? `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodedMsg}`
+    : `https://web.whatsapp.com/send?phone=${phoneNumber}&text=${encodedMsg}`;
 
-      // ✅ Use window.open to avoid redirect issues
-      setTimeout(() => {
-        window.open(whatsappURL, '_blank');
-      }, 1000);
-    } else {
-      alert("Order failed. Please try again.");
-    }
-  });
+  // Open WhatsApp first
+  window.open(whatsappURL, '_blank');
+
+  // Store order in Firebase
+  firebase.database().ref("orders/" + orderId).set(order);
+
+  // Clear cart and redirect
+  localStorage.removeItem("cart");
+  setTimeout(() => {
+    window.location.href = "success.html";
+  }, 1500);
 }
 
-// Initialize
+// Initialize on load
 window.onload = function () {
   renderProducts();
   renderCart();
