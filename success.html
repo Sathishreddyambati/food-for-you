@@ -1,1 +1,13 @@
-<!-- Order success page -->
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>Order Success</title></head>
+<body>
+  <h2>✅ Order Placed Successfully!</h2>
+  <p>Your Order ID: <span id="orderId"></span></p>
+  <a href="track.html">Track Your Order</a>
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    document.getElementById("orderId").innerText = urlParams.get("orderId");
+  </script>
+</body>
+</html><!-- Order success page -->
