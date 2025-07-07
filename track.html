@@ -1,18 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"><title>Track Order</title></head>
+<head>
+  <meta charset="UTF-8">
+  <title>Track Order - Food For You</title>
+  <link rel="stylesheet" href="style.css">
+</head>
 <body>
   <h2>Track Your Order</h2>
   <input type="text" id="trackId" placeholder="Enter Order ID">
   <button onclick="trackOrder()">Track</button>
-  <p id="status"></p>
+
+  <div id="result" style="margin-top: 20px;"></div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
   <script src="firebase-config.js"></script>
   <script>
-    async function trackOrder() {
-      const id = document.getElementById('trackId').value;
-      const db = firebase.database();
-      const snapshot = await db.ref('orders/' + id).once('value');
-      document.getElementById('status').innerText = snapshot.val()?.status || 'Order not found';
+    function trackOrder() {
+      const id = document.getElementById("trackId").value;
+      const result = document.getElementById("result");
+
+      if (!id) return alert("Please enter your Order ID!");
+
+      firebase.database().ref("orders/" + id).once("value", snapshot => {
+        const data = snapshot.val();
+        if (data) {
+          result.innerHTML = `
+            <strong>Order ID:</strong> ${id}<br>
+            <strong>Status:</strong> ${data.status}<br>
+            <strong>Items:</strong> ${data.items.map(i => `${i.name} × ${i.qty}`).join(", ")}<br>
+            <strong>Total:</strong> ₹${data.total}<br>
+            <strong>Time:</strong> ${data.timestamp}
+          `;
+        } else {
+          result.innerHTML = "❌ Order not found. Please check your ID.";
+        }
+      });
     }
   </script>
 </body>
