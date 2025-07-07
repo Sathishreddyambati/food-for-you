@@ -1,4 +1,4 @@
-// Firebase configuration
+// Firebase Config
 const firebaseConfig = {
   apiKey: "AIzaSyCQd4MFvO1q-6Rtr9GrvyyIoO3VF5ibLK0",
   authDomain: "foodforyou-52955.firebaseapp.com",
@@ -12,86 +12,115 @@ const firebaseConfig = {
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 
-// Load cart on page load
-document.addEventListener("DOMContentLoaded", () => {
-  const cart = JSON.parse(localStorage.getItem("cart")) || [];
-  displayCart(cart);
+// Product list
+const products = [
+  { id: 1, name: "Chicken Biryani", price: 180 },
+  { id: 2, name: "Veg Biryani", price: 150 },
+  { id: 3, name: "Idly", price: 40 },
+  { id: 4, name: "Masala Dosa", price: 60 },
+  { id: 5, name: "Puri", price: 50 }
+];
 
-  const orderForm = document.getElementById("orderForm");
-  if (orderForm) {
-    orderForm.addEventListener("submit", function (e) {
-      e.preventDefault();
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
-      const name = document.getElementById("name").value;
-      const address = document.getElementById("address").value;
-      const mapLink = document.getElementById("mapLink").value || "Not Provided";
-      const payment = document.querySelector('input[name="payment"]:checked').value;
+// Render all products
+function renderProducts() {
+  const container = document.getElementById("products");
+  if (!container) return;
 
-      const orderId = generateOrderID();
-      const cart = JSON.parse(localStorage.getItem("cart")) || [];
-      const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
-
-      let message = `*New Order* 🚨\n`;
-      message += `🧾 Order ID: ${orderId}\n`;
-      message += `👤 Name: ${name}\n`;
-      message += `📍 Address: ${address}\n`;
-      message += `📌 Map: ${mapLink}\n\n`;
-      message += `🛒 Items:\n`;
-
-      cart.forEach(item => {
-        message += `- ${item.name} × ${item.qty} = ₹${item.qty * item.price}\n`;
-      });
-
-      message += `\n💰 Total: ₹${total}\n`;
-      message += `💳 Payment: ${payment}`;
-
-      const whatsappURL = `https://wa.me/916309091558?text=${encodeURIComponent(message)}`;
-
-      // Open WhatsApp
-      window.open(whatsappURL, '_blank');
-
-      // Save to Firebase
-      saveOrderToFirebase(orderId, name, address, mapLink, cart, total, payment);
-
-      // Redirect to success after short delay
-      setTimeout(() => {
-        localStorage.removeItem("cart");
-        window.location.href = "success.html?orderId=" + orderId;
-      }, 3000);
-    });
-  }
-});
-
-// Generate random Order ID
-function generateOrderID() {
-  return 'ORD' + Math.floor(Math.random() * 1000000);
+  container.innerHTML = "";
+  products.forEach(product => {
+    const item = document.createElement("div");
+    item.className = "product-item";
+    item.innerHTML = `
+      <h3>${product.name}</h3>
+      <p>₹${product.price}</p>
+      <button onclick="addToCart(${product.id})">Add to Cart</button>
+    `;
+    container.appendChild(item);
+  });
 }
 
-// Display cart items on order page
-function displayCart(cart) {
-  const cartContainer = document.getElementById("cartItems");
+// Add to cart
+function addToCart(id) {
+  const product = products.find(p => p.id === id);
+  const existing = cart.find(i => i.id === id);
+  if (existing) {
+    existing.qty += 1;
+  } else {
+    cart.push({ ...product, qty: 1 });
+  }
+  localStorage.setItem("cart", JSON.stringify(cart));
+  alert("Added to cart!");
+  renderCart(); // update view if on cart page
+}
+
+// Render cart page
+function renderCart() {
+  const container = document.getElementById("cartItems");
   const totalDisplay = document.getElementById("totalAmount");
 
-  if (!cartContainer || !totalDisplay) return;
+  if (!container || !totalDisplay) return;
 
-  cartContainer.innerHTML = "";
+  container.innerHTML = "";
   let total = 0;
 
-  cart.forEach(item => {
+  cart.forEach((item, index) => {
     const itemDiv = document.createElement("div");
     itemDiv.className = "cart-item";
     itemDiv.innerHTML = `
-      <span>${item.name} × ${item.qty}</span>
-      <span>₹${item.price * item.qty}</span>
+      <span>${item.name} × 
+        <button onclick="changeQty(${index}, -1)">-</button>
+        ${item.qty}
+        <button onclick="changeQty(${index}, 1)">+</button>
+        = ₹${item.qty * item.price}
+      </span>
     `;
-    cartContainer.appendChild(itemDiv);
-    total += item.price * item.qty;
+    container.appendChild(itemDiv);
+    total += item.qty * item.price;
   });
 
   totalDisplay.textContent = `Total: ₹${total}`;
 }
 
-// Save order to Firebase
+// Change quantity
+function changeQty(index, delta) {
+  cart[index].qty += delta;
+  if (cart[index].qty <= 0) {
+    cart.splice(index, 1);
+  }
+  localStorage.setItem("cart", JSON.stringify(cart));
+  renderCart();
+}
+
+// Submit Order
+function submitOrder(e) {
+  e.preventDefault();
+  const name = document.getElementById("name").value;
+  const address = document.getElementById("address").value;
+  const mapLink = document.getElementById("mapLink").value || "Not Provided";
+  const payment = document.querySelector("input[name='payment']:checked").value;
+
+  const orderId = generateOrderID();
+  const total = cart.reduce((sum, item) => sum + item.qty * item.price, 0);
+
+  const msg = `*New Order* 🚨\n🧾 Order ID: ${orderId}\n👤 Name: ${name}\n📍 Address: ${address}\n📌 Map: ${mapLink}\n\n🛒 Items:\n` +
+    cart.map(i => `- ${i.name} × ${i.qty} = ₹${i.qty * i.price}`).join("\n") +
+    `\n\n💰 Total: ₹${total}\n💳 Payment: ${payment}`;
+
+  const encodedMsg = encodeURIComponent(msg);
+  const whatsappURL = `https://wa.me/916309091558?text=${encodedMsg}`;
+  window.open(whatsappURL, "_blank");
+
+  saveOrderToFirebase(orderId, name, address, mapLink, cart, total, payment);
+
+  setTimeout(() => {
+    localStorage.removeItem("cart");
+    window.location.href = "success.html?orderId=" + orderId;
+  }, 3000);
+}
+
+// Save to Firebase
 function saveOrderToFirebase(orderId, name, address, mapLink, cart, total, payment) {
   const timestamp = new Date().toLocaleString();
   const orderData = {
@@ -105,12 +134,23 @@ function saveOrderToFirebase(orderId, name, address, mapLink, cart, total, payme
     timestamp
   };
 
-  const db = firebase.database();
-  db.ref("orders/" + orderId).set(orderData)
-    .then(() => {
-      console.log("✅ Order saved to Firebase");
-    })
-    .catch((error) => {
-      console.error("❌ Error saving order:", error);
-    });
-        }
+  firebase.database().ref("orders/" + orderId).set(orderData)
+    .then(() => console.log("✅ Order saved"))
+    .catch(err => console.error("❌ Firebase error:", err));
+}
+
+// Generate Order ID
+function generateOrderID() {
+  return "ORD" + Math.floor(100000 + Math.random() * 900000);
+}
+
+// Init
+window.onload = function () {
+  renderProducts();
+  renderCart();
+
+  const orderForm = document.getElementById("orderForm");
+  if (orderForm) {
+    orderForm.addEventListener("submit", submitOrder);
+  }
+};
