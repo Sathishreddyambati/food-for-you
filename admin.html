@@ -1,37 +1,148 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"><title>Admin</title></head>
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard – Food For You</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #f8f9fa;
+    }
+    h1 {
+      text-align: center;
+      color: #e63946;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: #fff;
+    }
+    th, td {
+      padding: 12px;
+      border: 1px solid #ccc;
+      text-align: left;
+      font-size: 14px;
+    }
+    th {
+      background-color: #e63946;
+      color: white;
+    }
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+    .delivered {
+      background-color: #38b000;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    @media (max-width: 600px) {
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+      th {
+        display: none;
+      }
+      td {
+        border: none;
+        position: relative;
+        padding-left: 50%;
+        text-align: right;
+      }
+      td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 15px;
+        width: 45%;
+        padding-left: 5px;
+        font-weight: bold;
+        text-align: left;
+      }
+    }
+  </style>
+</head>
 <body>
-  <h2>Admin Dashboard</h2>
-  <input type="password" id="adminPass" placeholder="Enter Admin Password">
-  <button onclick="loginAdmin()">Login</button>
-  <div id="orders" style="display:none;"></div>
-  <script src="firebase-config.js"></script>
-  <script>
-    const adminPassword = "sathishadmin123";
-    function loginAdmin() {
-      if (document.getElementById('adminPass').value === adminPassword) {
-        document.getElementById('orders').style.display = 'block';
-        loadOrders();
-      } else alert("Wrong password");
-    }
-    function loadOrders() {
-      const db = firebase.database();
-      db.ref("orders").on("value", snapshot => {
-        const orders = snapshot.val();
-        let html = "";
-        for (let id in orders) {
-          html += `<div><b>${id}</b>: ${orders[id].name}, ${orders[id].status}<br>
-          <select onchange="updateStatus('${id}', this.value)">
-            <option>Confirmed</option><option>Preparing</option><option>Out for Delivery</option><option>Delivered</option>
-          </select></div><hr>`;
-        }
-        document.getElementById('orders').innerHTML = html;
+
+<script>
+  const password = prompt("Enter admin password:");
+  if (password !== "Sathi@143") {
+    alert("Access denied!");
+    window.location.href = "index.html";
+  }
+</script>
+
+<h1>Admin Dashboard – Orders</h1>
+<table id="orderTable">
+  <thead>
+    <tr>
+      <th>Order ID</th>
+      <th>Name</th>
+      <th>Address</th>
+      <th>Map Link</th>
+      <th>Items</th>
+      <th>Total</th>
+      <th>Payment</th>
+      <th>Status</th>
+      <th>Time</th>
+    </tr>
+  </thead>
+  <tbody id="orderBody">
+    <!-- Orders will load here -->
+  </tbody>
+</table>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCQd4MFvO1q-6Rtr9GrvyyIoO3VF5ibLK0",
+    authDomain: "foodforyou-52955.firebaseapp.com",
+    projectId: "foodforyou-52955",
+    storageBucket: "foodforyou-52955.appspot.com",
+    messagingSenderId: "992651702910",
+    appId: "1:992651702910:web:5cdebc9f90e90701371e2f",
+    databaseURL: "https://foodforyou-52955-default-rtdb.firebaseio.com"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  const orderBody = document.getElementById("orderBody");
+
+  db.ref("orders").on("value", snapshot => {
+    orderBody.innerHTML = "";
+    const orders = snapshot.val();
+    if (orders) {
+      Object.entries(orders).reverse().forEach(([orderId, order]) => {
+        const row = document.createElement("tr");
+
+        const items = order.items.map(i => `${i.name} × ${i.qty} = ₹${i.qty * i.price}`).join("<br>");
+
+        row.innerHTML = `
+          <td data-label="Order ID">${orderId}</td>
+          <td data-label="Name">${order.name}</td>
+          <td data-label="Address">${order.address}</td>
+          <td data-label="Map"><a href="${order.mapLink}" target="_blank">Map</a></td>
+          <td data-label="Items">${items}</td>
+          <td data-label="Total">₹${order.total}</td>
+          <td data-label="Payment">${order.payment}</td>
+          <td data-label="Status">${order.status}</td>
+          <td data-label="Time">${order.timestamp}</td>
+        `;
+        orderBody.appendChild(row);
       });
+    } else {
+      orderBody.innerHTML = "<tr><td colspan='9'>No orders found.</td></tr>";
     }
-    function updateStatus(id, status) {
-      firebase.database().ref('orders/' + id).update({ status });
-    }
-  </script>
+  });
+</script>
+
 </body>
 </html>
